@@ -32,7 +32,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
     // 2. Resolve Username -> User ID
     const { data: profile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, username, bio')
         .eq('username', username)
         .single()
 
@@ -70,6 +70,11 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight">{username}</h1>
                 <p className="text-muted-foreground">Developer Signal</p>
+                {profile?.bio && (
+                    <p className="max-w-md mx-auto mt-4 text-sm text-foreground/80 leading-relaxed">
+                        {profile.bio}
+                    </p>
+                )}
             </div>
 
             <PulseFeed initialEvents={combinedFeed} />
