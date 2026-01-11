@@ -1,6 +1,7 @@
 import { UploadForm } from '@/components/proofs/upload-form'
 import { createClient } from '@/utils/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
 
@@ -47,8 +48,13 @@ export default async function ProofsPage() {
                                 {formatDistanceToNow(new Date(receipt.date), { addSuffix: true })}
                             </p>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
                             <p className="text-sm">{receipt.description}</p>
+                            <Button asChild variant="outline" size="sm" className="w-full gap-2">
+                                <a href={receipt.url} target="_blank" rel="noopener noreferrer">
+                                    View Original {receipt.type === 'pdf' ? 'PDF' : 'Image'}
+                                </a>
+                            </Button>
                         </CardContent>
                     </Card>
                 ))}
