@@ -1,49 +1,58 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { Activity, FileText, Settings, LogOut } from 'lucide-react'
+import { Activity, FileText, Settings, LogOut, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import MobileNav from '@/components/dashboard/mobile-nav'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 
-export default async function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode
-}) {
-    const supabase = await createClient()
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-        return redirect('/')
-    }
-
-    const userEmail = user.user_metadata.user_name || user.email || ''
+export default function MobileNav({ userEmail }: { userEmail: string }) {
+    const [open, setOpen] = useState(false)
 
     return (
-        <div className="flex min-h-screen bg-background">
-            {/* Desktop Sidebar */}
-            <aside className="w-64 border-r bg-card hidden md:flex flex-col">
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64">
+                <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
+                <SheetDescription className="sr-only">Navigate through the dashboard sections</SheetDescription>
+
                 <div className="flex flex-col h-full">
                     <div className="p-6">
                         <h2 className="text-xl font-bold tracking-tight">The Signal</h2>
                     </div>
                     <nav className="flex-1 px-4 space-y-2">
-                        <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                        <Button
+                            asChild
+                            variant="ghost"
+                            className="w-full justify-start gap-2"
+                            onClick={() => setOpen(false)}
+                        >
                             <Link href="/dashboard">
                                 <Activity className="h-4 w-4" />
                                 Pulse
                             </Link>
                         </Button>
-                        <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                        <Button
+                            asChild
+                            variant="ghost"
+                            className="w-full justify-start gap-2"
+                            onClick={() => setOpen(false)}
+                        >
                             <Link href="/dashboard/proofs">
                                 <FileText className="h-4 w-4" />
                                 Proofs
                             </Link>
                         </Button>
-                        <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                        <Button
+                            asChild
+                            variant="ghost"
+                            className="w-full justify-start gap-2"
+                            onClick={() => setOpen(false)}
+                        >
                             <Link href="/dashboard/settings">
                                 <Settings className="h-4 w-4" />
                                 Settings
@@ -64,18 +73,7 @@ export default async function DashboardLayout({
                         </form>
                     </div>
                 </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col">
-                <header className="h-16 border-b flex items-center px-6 md:hidden justify-between">
-                    <span className="font-bold">The Signal</span>
-                    <MobileNav userEmail={userEmail} />
-                </header>
-                <div className="flex-1 p-6 overflow-auto">
-                    {children}
-                </div>
-            </main>
-        </div>
+            </SheetContent>
+        </Sheet>
     )
 }

@@ -52,7 +52,7 @@ export default async function ProofsPage() {
                             <p className="text-sm">{receipt.description}</p>
                             <Button asChild variant="outline" size="sm" className="w-full gap-2">
                                 <a href={receipt.url} target="_blank" rel="noopener noreferrer">
-                                    View Original {receipt.type === 'pdf' ? 'PDF' : 'Image'}
+                                    View Proof Document
                                 </a>
                             </Button>
                         </CardContent>
