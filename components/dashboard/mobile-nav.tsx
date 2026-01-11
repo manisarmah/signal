@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { Activity, FileText, Settings, LogOut, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
-export default function MobileNav({ userEmail }: { userEmail: string }) {
+export default function MobileNav({ userEmail, avatarUrl }: { userEmail: string, avatarUrl?: string }) {
     const [open, setOpen] = useState(false)
 
     return (
@@ -61,6 +62,10 @@ export default function MobileNav({ userEmail }: { userEmail: string }) {
                     </nav>
                     <div className="p-4 border-t">
                         <div className="flex items-center gap-3 mb-4">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={avatarUrl} alt={userEmail} />
+                                <AvatarFallback>{userEmail[0]?.toUpperCase()}</AvatarFallback>
+                            </Avatar>
                             <div className="text-sm font-medium truncate">
                                 {userEmail}
                             </div>
