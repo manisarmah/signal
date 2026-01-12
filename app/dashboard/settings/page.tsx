@@ -1,10 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { SettingsForm } from '@/components/dashboard/settings-form'
 
 export default async function SettingsPage() {
     const supabase = await createClient()
@@ -23,26 +22,6 @@ export default async function SettingsPage() {
         .select('*')
         .eq('id', user.id)
         .single()
-
-    async function updateProfile(formData: FormData) {
-        'use server'
-
-        const bio = formData.get('bio') as string
-        const supabase = await createClient()
-        const {
-            data: { user },
-        } = await supabase.auth.getUser()
-
-        if (!user) return
-
-        await supabase
-            .from('profiles')
-            .update({ bio })
-            .eq('id', user.id)
-
-        revalidatePath('/dashboard/settings')
-        revalidatePath(`/p/${profile?.username}`)
-    }
 
     return (
         <div className="max-w-2xl mx-auto space-y-8">
@@ -64,22 +43,7 @@ export default async function SettingsPage() {
                     <p className="text-sm text-muted-foreground">Your unique Signal handle.</p>
                 </div>
 
-                <form action={updateProfile} className="space-y-4">
-                    <div className="grid w-full gap-1.5">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea
-                            id="bio"
-                            name="bio"
-                            placeholder="Tell us about yourself..."
-                            defaultValue={profile?.bio || ''}
-                            className="min-h-[100px]"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                            This will be displayed on your public profile.
-                        </p>
-                    </div>
-                    <Button type="submit">Save Changes</Button>
-                </form>
+                <SettingsForm initialBio={profile?.bio || ''} />
             </div>
         </div>
     )

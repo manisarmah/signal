@@ -5,7 +5,6 @@ import { EventCard } from './event-card'
 import { FeedItem } from '@/types/activity'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getFeedItems } from '@/app/actions/get-feed'
-import { produce } from 'immer' // Optional, but simpler array spread is fine here
 
 export function PulseFeed({ initialEvents = [] }: { initialEvents?: FeedItem[] }) {
     const [events, setEvents] = useState<FeedItem[]>(initialEvents)

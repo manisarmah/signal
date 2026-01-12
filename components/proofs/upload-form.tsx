@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Upload } from 'lucide-react'
+import { Calendar as CalendarIcon, Upload, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -180,6 +180,7 @@ export function UploadForm() {
 
                     <DialogFooter>
                         <Button type="submit" disabled={uploading}>
+                            {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {uploading ? "Uploading..." : "Save Receipt"}
                         </Button>
                     </DialogFooter>
