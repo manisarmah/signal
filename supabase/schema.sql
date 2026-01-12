@@ -18,9 +18,9 @@ create policy "Users can insert their own receipts"
   on receipts for insert
   with check (auth.uid() = user_id);
 
-create policy "Users can view their own receipts"
+create policy "Everyone can view receipts"
   on receipts for select
-  using (auth.uid() = user_id);
+  using (true);
 
 -- Create a storage bucket for 'proofs'
 insert into storage.buckets (id, name, public)

@@ -1,5 +1,5 @@
 import { PulseFeed } from '@/components/pulse/feed'
-import { fetchGitHubEvents } from '@/utils/github'
+import { fetchGitHubEvents, fetchGitHubUser } from '@/utils/github'
 import { createClient } from '@/utils/supabase/server'
 import { FeedItem } from '@/types/activity'
 import { notFound } from 'next/navigation'
@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PublicProfilePage({ params }: PageProps) {
     const { username } = await params
 
+    // 0. Fetch GitHub User Profile
+    const githubUser = await fetchGitHubUser(username)
+    const displayName = githubUser?.name || username
+
     // 1. Fetch GitHub Events (Public)
     const githubEvents = await fetchGitHubEvents(username)
     let manualReceipts: FeedItem[] = []
@@ -36,18 +40,30 @@ export default async function PublicProfilePage({ params }: PageProps) {
         .eq('username', username)
         .single()
 
+    // ... (rest of logic)
+
+
     // 3. Fetch Manual Receipts (if profile exists)
     if (profile) {
-        const { data: receipts } = await supabase
+        console.log('Found profile:', profile)
+        const { data: receipts, error: receiptError } = await supabase
             .from('receipts')
             .select('*')
             .eq('user_id', profile.id)
             .order('date', { ascending: false })
             .limit(10)
 
+        if (receiptError) {
+            console.error('Error fetching receipts:', receiptError)
+        } else {
+            console.log('Fetched receipts:', receipts?.length, receipts)
+        }
+
         if (receipts) {
             manualReceipts = receipts.map((r: any) => ({ ...r, source: 'manual' }))
         }
+    } else {
+        console.log('Profile not found for username:', username)
     }
 
     // 4. Normalize & Merge
@@ -65,11 +81,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
                     <ShareButton username={username} />
                 </div>
                 <div className="h-20 w-20 bg-muted rounded-full mx-auto overflow-hidden relative mb-4">
-                    {/* Placeholder Avatar - in real app would fetch from GitHub API user details */}
-                    <img src={`https://github.com/${username}.png`} alt={username} className="object-cover" />
+                    <img src={githubUser?.avatar_url || `https://github.com/${username}.png`} alt={username} className="object-cover h-full w-full" />
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight">{username}</h1>
-                <p className="text-muted-foreground">Developer Signal</p>
+                <h1 className="text-3xl font-bold tracking-tight">{displayName}</h1>
+                <p className="text-muted-foreground">@{username} • Developer Signal</p>
                 {profile?.bio && (
                     <p className="max-w-md mx-auto mt-4 text-sm text-foreground/80 leading-relaxed">
                         {profile.bio}

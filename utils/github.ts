@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 
-export async function fetchGitHubEvents(usernameOverride?: string) {
+export async function fetchGitHubEvents(usernameOverride?: string, page: number = 1) {
     let username = usernameOverride
     let token = undefined
 
@@ -33,7 +33,7 @@ export async function fetchGitHubEvents(usernameOverride?: string) {
             headers['Authorization'] = `token ${token}`
         }
 
-        const response = await fetch(`https://api.github.com/users/${username}/events?per_page=10`, {
+        const response = await fetch(`https://api.github.com/users/${username}/events?page=${page}&per_page=10`, {
             headers,
             cache: 'no-store'
         })
@@ -48,5 +48,24 @@ export async function fetchGitHubEvents(usernameOverride?: string) {
     } catch (err) {
         console.error('GitHub API fetch error:', err)
         return []
+    }
+}
+
+export async function fetchGitHubUser(username: string) {
+    try {
+        const response = await fetch(`https://api.github.com/users/${username}`, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'The-Signal-App'
+            },
+            // Cache for a bit to avoid hitting limits too hard
+            next: { revalidate: 3600 }
+        })
+
+        if (!response.ok) return null
+        return await response.json()
+    } catch (error) {
+        console.error('Error fetching GitHub user:', error)
+        return null
     }
 }

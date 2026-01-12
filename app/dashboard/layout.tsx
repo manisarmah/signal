@@ -21,11 +21,38 @@ export default async function DashboardLayout({
         return redirect('/')
     }
 
-    const userEmail = user.user_metadata.user_name || user.email || ''
+    // Self-Heal: Ensure public profile exists
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile) {
+        console.log('Profile missing for user. ID:', user.id)
+        console.log('Metadata available:', user.user_metadata)
+
+        const newProfile = {
+            id: user.id,
+            username: user.user_metadata.user_name || user.user_metadata.preferred_username || user.email?.split('@')[0],
+            bio: 'Developer'
+        }
+        console.log('Attempting to create profile:', newProfile)
+
+        const { error: insertError } = await supabase.from('profiles').insert(newProfile)
+
+        if (insertError) {
+            console.error('FAILED to create profile:', insertError)
+        } else {
+            console.log('Successfully created profile!')
+        }
+    }
+
+    const userDisplayName = user.user_metadata.full_name || user.user_metadata.user_name || user.email || ''
     const avatarUrl = user.user_metadata.avatar_url || ''
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div className="flex h-screen overflow-hidden bg-background">
             {/* Desktop Sidebar */}
             <aside className="w-64 border-r bg-card hidden md:flex flex-col">
                 <div className="flex flex-col h-full">
@@ -55,11 +82,11 @@ export default async function DashboardLayout({
                     <div className="p-4 border-t">
                         <div className="flex items-center gap-3 mb-4">
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src={avatarUrl} alt={userEmail} />
-                                <AvatarFallback>{userEmail[0]?.toUpperCase()}</AvatarFallback>
+                                <AvatarImage src={avatarUrl} alt={userDisplayName} />
+                                <AvatarFallback>{userDisplayName[0]?.toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="text-sm font-medium truncate">
-                                {userEmail}
+                                {userDisplayName}
                             </div>
                         </div>
                         <form action="/auth/signout" method="post">
@@ -76,9 +103,9 @@ export default async function DashboardLayout({
             <main className="flex-1 flex flex-col">
                 <header className="h-16 border-b flex items-center px-6 md:hidden justify-between">
                     <span className="font-bold">The Signal</span>
-                    <MobileNav userEmail={userEmail} avatarUrl={avatarUrl} />
+                    <MobileNav userEmail={userDisplayName} avatarUrl={avatarUrl} />
                 </header>
-                <div className="flex-1 p-6 overflow-auto">
+                <div className="flex-1 p-6 overflow-y-auto">
                     {children}
                 </div>
             </main>
