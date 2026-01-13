@@ -24,7 +24,7 @@ export function SkillRadar({ items }: SkillRadarProps) {
                 tags = ['Algorithms']
             } else if (item.source === 'github') {
                 // Infer from Type
-                if (item.type === 'pr' || item.type === 'isssue') tags = ['Collaboration']
+                if (item.type === 'pr' || item.type === 'issue') tags = ['Collaboration']
                 else tags = ['Software Engineering']
             }
 

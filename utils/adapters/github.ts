@@ -17,7 +17,7 @@ export const GitHubAdapter: DataSourceAdapter = {
         const events = await fetchGitHubEvents(config.username, 1) // Default to page 1 for now
 
         // Map to new Unified FeedItem
-        return events.map(event => ({
+        return events.map((event: any) => ({
             id: event.id,
             source: 'github',
             type: event.type as any, // We will refine this map

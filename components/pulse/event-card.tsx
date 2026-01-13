@@ -21,11 +21,6 @@ const EventIcon = ({ item }: { item: FeedItem }) => {
         return <Code className="h-5 w-5 text-orange-500" />
     }
 
-    // LeetCode Mapping
-    if (item.source === 'leetcode') {
-        return <Code className="h-5 w-5 text-orange-500" />
-    }
-
     // GitHub Mapping
     if (item.source === 'github') {
         switch (item.type) {

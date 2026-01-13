@@ -14,7 +14,7 @@ export interface DataSourceAdapter {
     fetchActivity(config: AdapterConfig): Promise<FeedItem[]>
 
     // Validate that the user exists on this platform
-    verifyIdentity(username: string): Promise<boolean>
+    verifyIdentity(username: string, verificationCode?: string): Promise<boolean>
 
     // Get profile data (avatar, followers, etc.)
     getProfileDetails?(username: string): Promise<any>
