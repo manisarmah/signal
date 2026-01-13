@@ -19,6 +19,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 }
 
+import { ActivityChart } from '@/components/visuals/activity-chart'
+import { SkillRadar } from '@/components/visuals/skill-radar'
+
 export default async function PublicProfilePage({ params }: PageProps) {
     const { username } = await params
     const supabase = await createClient()
@@ -53,6 +56,11 @@ export default async function PublicProfilePage({ params }: PageProps) {
                         {profile.bio}
                     </p>
                 )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <ActivityChart items={combinedFeed} />
+                <SkillRadar items={combinedFeed} />
             </div>
 
             <PulseFeed initialEvents={combinedFeed} publicUsername={username} />

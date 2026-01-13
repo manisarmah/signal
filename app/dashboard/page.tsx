@@ -3,6 +3,8 @@ import { getFeedItems } from '@/app/actions/get-feed'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { ActivityChart } from '@/components/visuals/activity-chart'
+import { SkillRadar } from '@/components/visuals/skill-radar'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -34,6 +36,11 @@ export default async function DashboardPage() {
                         View Public Profile
                     </Link>
                 </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <ActivityChart items={initialFeed} />
+                <SkillRadar items={initialFeed} />
             </div>
 
             <PulseFeed initialEvents={initialFeed} />

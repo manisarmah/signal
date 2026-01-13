@@ -18,6 +18,9 @@ export const LeetCodeAdapter: DataSourceAdapter = {
                         title
                         titleSlug
                         timestamp
+                        topicTags {
+                            name
+                        }
                     }
                 }
             `
@@ -53,7 +56,8 @@ export const LeetCodeAdapter: DataSourceAdapter = {
                 date: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
                 created_at: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
                 metadata: {
-                    slug: sub.titleSlug
+                    slug: sub.titleSlug,
+                    tags: sub.topicTags?.map((t: any) => t.name) || []
                 }
             }))
 
