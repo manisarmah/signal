@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   description: "A Niche Proof-of-Work Dashboard",
 };
 
+import { ThemeProvider } from "@/components/theme-provider"
+import { ModeToggle } from "@/components/mode-toggle"
+
+// ... imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,8 +23,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <ModeToggle />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

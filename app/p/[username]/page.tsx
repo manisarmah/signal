@@ -1,8 +1,7 @@
 import { PulseFeed } from '@/components/pulse/feed'
-import { fetchGitHubEvents, fetchGitHubUser } from '@/utils/github'
+import { getPublicFeedItems } from '@/app/actions/get-feed'
+import { fetchGitHubUser } from '@/utils/github'
 import { createClient } from '@/utils/supabase/server'
-import { FeedItem } from '@/types/activity'
-import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { ShareButton } from '@/components/public-profile/share-button'
 
@@ -22,57 +21,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PublicProfilePage({ params }: PageProps) {
     const { username } = await params
+    const supabase = await createClient()
 
     // 0. Fetch GitHub User Profile
     const githubUser = await fetchGitHubUser(username)
     const displayName = githubUser?.name || username
 
-    // 1. Fetch GitHub Events (Public)
-    const githubEvents = await fetchGitHubEvents(username)
-    let manualReceipts: FeedItem[] = []
-
-    const supabase = await createClient()
-
-    // 2. Resolve Username -> User ID
+    // 1. Resolve Profile for Bio
     const { data: profile } = await supabase
         .from('profiles')
-        .select('id, username, bio')
+        .select('bio')
         .eq('username', username)
         .single()
 
-    // ... (rest of logic)
-
-
-    // 3. Fetch Manual Receipts (if profile exists)
-    if (profile) {
-        console.log('Found profile:', profile)
-        const { data: receipts, error: receiptError } = await supabase
-            .from('receipts')
-            .select('*')
-            .eq('user_id', profile.id)
-            .order('date', { ascending: false })
-            .limit(10)
-
-        if (receiptError) {
-            console.error('Error fetching receipts:', receiptError)
-        } else {
-            console.log('Fetched receipts:', receipts?.length, receipts)
-        }
-
-        if (receipts) {
-            manualReceipts = receipts.map((r: any) => ({ ...r, source: 'manual' }))
-        }
-    } else {
-        console.log('Profile not found for username:', username)
-    }
-
-    // 4. Normalize & Merge
-    const normalizedGitHub: FeedItem[] = githubEvents.map((e: any) => ({ ...e, source: 'github' }))
-    const combinedFeed = [...normalizedGitHub, ...manualReceipts].sort((a, b) => {
-        const dateA = new Date(a.source === 'manual' ? a.date : a.created_at).getTime()
-        const dateB = new Date(b.source === 'manual' ? b.date : b.created_at).getTime()
-        return dateB - dateA // Descending
-    })
+    // 2. Fetch Combined Public Feed
+    const combinedFeed = await getPublicFeedItems(username, 1)
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 py-12 px-4">
@@ -92,7 +55,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 )}
             </div>
 
-            <PulseFeed initialEvents={combinedFeed} />
+            <PulseFeed initialEvents={combinedFeed} publicUsername={username} />
         </div>
     )
 }

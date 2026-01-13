@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { SettingsForm } from '@/components/dashboard/settings-form'
+import { IntegrationsForm } from '@/components/dashboard/integrations-form'
 
 export default async function SettingsPage() {
     const supabase = await createClient()
@@ -44,6 +45,14 @@ export default async function SettingsPage() {
                 </div>
 
                 <SettingsForm initialBio={profile?.bio || ''} />
+
+                <div className="border-t pt-6">
+                    <IntegrationsForm
+                        userId={user.id}
+                        devtoUsername={profile?.devto_username || ''}
+                        leetcodeUsername={profile?.leetcode_username || ''}
+                    />
+                </div>
             </div>
         </div>
     )

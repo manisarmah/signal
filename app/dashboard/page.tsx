@@ -1,31 +1,26 @@
 import { PulseFeed } from '@/components/pulse/feed'
-import { fetchGitHubEvents } from '@/utils/github'
-import { createClient } from '@/utils/supabase/server'
-import { FeedItem, GitHubEvent, ManualReceipt } from '@/types/activity'
-import Link from 'next/link'
+import { getFeedItems } from '@/app/actions/get-feed'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { createClient } from '@/utils/supabase/server'
 
 export default async function DashboardPage() {
-    // 1. Fetch GitHub Events
-    const githubEvents = await fetchGitHubEvents()
-
-    // 2. Fetch Manual Receipts
     const supabase = await createClient()
-    const { data: receipts } = await supabase
-        .from('receipts')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(10)
+    const { data: { session } } = await supabase.auth.getSession()
+    let username = 'me'
 
-    // 3. Normalize & Merge
-    const normalizedGitHub: FeedItem[] = githubEvents.map((e: any) => ({ ...e, source: 'github' }))
-    const normalizedReceipts: FeedItem[] = (receipts || []).map((r: any) => ({ ...r, source: 'manual' }))
+    // Attempt to get username for the profile link
+    if (session) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single()
+        if (profile?.username) username = profile.username
+    }
 
-    const combinedFeed = [...normalizedGitHub, ...normalizedReceipts].sort((a, b) => {
-        const dateA = new Date(a.source === 'manual' ? a.date : a.created_at).getTime()
-        const dateB = new Date(b.source === 'manual' ? b.date : b.created_at).getTime()
-        return dateB - dateA // Descending
-    })
+    // Use the Unified Feed Action
+    const initialFeed = await getFeedItems(1)
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -35,13 +30,13 @@ export default async function DashboardPage() {
                     <p className="text-muted-foreground">Real-time aggregate of your developer journey.</p>
                 </div>
                 <Button asChild variant="outline" className='hidden md:flex'>
-                    <Link href={`/p/${githubEvents[0]?.actor?.login || 'me'}`}>
+                    <Link href={`/p/${username}`}>
                         View Public Profile
                     </Link>
                 </Button>
             </div>
 
-            <PulseFeed initialEvents={combinedFeed} />
+            <PulseFeed initialEvents={initialFeed} />
         </div>
     )
 }

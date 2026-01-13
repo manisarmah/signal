@@ -4,9 +4,9 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { EventCard } from './event-card'
 import { FeedItem } from '@/types/activity'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getFeedItems } from '@/app/actions/get-feed'
+import { getFeedItems, getPublicFeedItems } from '@/app/actions/get-feed'
 
-export function PulseFeed({ initialEvents = [] }: { initialEvents?: FeedItem[] }) {
+export function PulseFeed({ initialEvents = [], publicUsername }: { initialEvents?: FeedItem[], publicUsername?: string }) {
     const [events, setEvents] = useState<FeedItem[]>(initialEvents)
     const [page, setPage] = useState(1)
     const [hasMore, setHasMore] = useState(true)
@@ -30,12 +30,20 @@ export function PulseFeed({ initialEvents = [] }: { initialEvents?: FeedItem[] }
         setLoadingMore(true)
         try {
             const nextPage = page + 1
-            const newEvents = await getFeedItems(nextPage)
+            const newEvents = publicUsername
+                ? await getPublicFeedItems(publicUsername, nextPage)
+                : await getFeedItems(nextPage)
 
             if (newEvents.length === 0) {
                 setHasMore(false)
             } else {
-                setEvents(prev => [...prev, ...newEvents])
+                setEvents(prev => {
+                    const combined = [...prev, ...newEvents]
+                    // Remove duplicates just in case
+                    const unique = Array.from(new Map(combined.map(item => [item.id, item])).values())
+                    // Sort descending
+                    return unique.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                })
                 setPage(nextPage)
             }
         } catch (error) {
